@@ -549,6 +549,9 @@ list(APPEND LIBDWARFS_SRC
   src/dwarfs/wcwidth.c
   src/dwarfs/worker_group.cpp
   src/dwarfs/xattr.cpp
+  src/tlsh/tlsh_impl.cpp
+  src/tlsh/tlsh_util.cpp
+  src/tlsh/tlsh.cpp
 )
 
 if(WIN32)

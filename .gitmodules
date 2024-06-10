@@ -4,3 +4,6 @@
 [submodule "fbthrift"]
 	path = fbthrift
 	url = https://github.com/facebook/fbthrift
+[submodule "tlsh"]
+	path = tlsh
+	url = https://github.com/trendmicro/tlsh

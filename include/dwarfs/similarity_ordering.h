@@ -71,7 +71,7 @@ class similarity_ordering {
                       similarity_ordering_options const& opts);
 
   void order_nilsimsa(
-      basic_array_similarity_element_view<256, uint64_t> const& ev,
+      basic_array_similarity_element_view<320, uint64_t> const& ev,
       receiver<std::vector<index_value_type>> rec,
       std::optional<std::vector<index_value_type>> index = std::nullopt) const {
     impl_->order_nilsimsa(ev, std::move(rec), std::move(index));
@@ -82,7 +82,7 @@ class similarity_ordering {
     virtual ~impl() = default;
 
     virtual void order_nilsimsa(
-        basic_array_similarity_element_view<256, uint64_t> const& ev,
+        basic_array_similarity_element_view<320, uint64_t> const& ev,
         receiver<std::vector<index_value_type>> rec,
         std::optional<std::vector<index_value_type>> index) const = 0;
   };

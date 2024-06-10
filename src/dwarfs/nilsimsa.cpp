@@ -21,6 +21,10 @@
 
 #include "dwarfs/nilsimsa.h"
 #include "dwarfs/compiler.h"
+#include "tlsh/tlsh.h"
+#include "tlsh/tlsh_util.h"
+#include <algorithm>
+#include <cstring>
 
 namespace dwarfs {
 
@@ -59,42 +63,56 @@ constexpr inline uint8_t tran3(uint8_t a, uint8_t b, uint8_t c, uint8_t n) {
 
 class nilsimsa::impl {
  public:
+  Tlsh tlsh{};
   impl() = default;
 
   void update(uint8_t const* data, size_t size) {
-    if (size_ < 4) [[unlikely]] {
-      size_t n = std::min(size, 4 - size_);
-      update_slow(data, n);
-      data += n;
-      size -= n;
-      if (size == 0) {
-        return;
-      }
-    }
-    update_fast(data, size);
+    tlsh.update(data, size);
   }
 
-  void finalize(hash_type& hash) const {
-    size_t total = 0;
+  void finalize(hash_type& hash)  {
+    unsigned char hex[40];
+    tlsh.final();
+    from_hex(tlsh.getHash(), 35, hex);
+    std::memset(hash.data(), 0, 40);
+    std::memcpy(hash.data(), hex, 35);
 
-    if (size_ == 3) {
-      total = 1;
-    } else if (size_ == 4) {
-      total = 4;
-    } else if (size_ > 4) {
-      total = 8 * size_ - 28;
-    }
-
-    size_t threshold = total / acc_.size();
-
-    std::fill(hash.begin(), hash.end(), 0);
-
-    for (size_t i = 0; i < acc_.size(); i++) {
-      if (acc_[i] > threshold) {
-        hash[i >> 6] |= UINT64_C(1) << (i & 0x3F);
-      }
-    }
   }
+
+  // void update(uint8_t const* data, size_t size) {
+  //   if (size_ < 4) [[unlikely]] {
+  //     size_t n = std::min(size, 4 - size_);
+  //     update_slow(data, n);
+  //     data += n;
+  //     size -= n;
+  //     if (size == 0) {
+  //       return;
+  //     }
+  //   }
+  //   update_fast(data, size);
+  // }
+
+  // void finalize(hash_type& hash) const {
+  //   size_t total = 0;
+
+  //   if (size_ == 3) {
+  //     total = 1;
+  //   } else if (size_ == 4) {
+  //     total = 4;
+  //   } else if (size_ > 4) {
+  //     total = 8 * size_ - 28;
+  //   }
+
+  //   size_t threshold = total / acc_.size();
+
+  //   std::fill(hash.begin(), hash.end(), 0);
+
+  //   for (size_t i = 0; i < acc_.size(); i++) {
+  //     if (acc_[i] > threshold) {
+  //       hash[i >> 6] |= UINT64_C(1) << (i & 0x3F);
+  //     }
+  //   }
+  // }
 
  private:
   void update_slow(uint8_t const* data, size_t size) {

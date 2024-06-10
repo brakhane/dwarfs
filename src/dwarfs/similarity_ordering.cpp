@@ -29,11 +29,15 @@
 #include <folly/container/Enumerate.h>
 #include <folly/experimental/Bits.h>
 
+#include "tlsh/tlsh.h"
+#include "tlsh/tlsh_util.h"
+
 #include "dwarfs/compiler.h"
 #include "dwarfs/logger.h"
 #include "dwarfs/progress.h"
 #include "dwarfs/similarity_ordering.h"
 #include "dwarfs/worker_group.h"
+
 
 namespace dwarfs {
 
@@ -71,13 +75,19 @@ class job_tracker {
 
 template <typename T, size_t N>
 int distance(std::array<T, N> const& a, std::array<T, N> const& b) {
-  int d = 0;
-  for (size_t i = 0; i < N; ++i) {
-    d += folly::popcount(a[i] ^ b[i]);
-  }
-  return d;
+    Tlsh ta, tb;
+    char buf[80];
+    static_assert(N==5);
+
+    to_hex((unsigned char*)a.data(), 35, buf);
+    if (ta.fromTlshStr(buf) != 0) exit(1);
+    to_hex((unsigned char*)b.data(), 35, buf);
+    if (tb.fromTlshStr(buf) != 0) exit(1);
+
+    return ta.totalDiff(&tb, false);
 }
 
+#if 0
 #ifdef DWARFS_MULTIVERSIONING
 #ifdef __clang__
 __attribute__((target_clones("avx512vpopcntdq", "popcnt", "default")))
@@ -85,9 +95,10 @@ __attribute__((target_clones("avx512vpopcntdq", "popcnt", "default")))
 __attribute__((target_clones("popcnt", "default")))
 #endif
 #endif
-int distance(std::array<uint64_t, 4> const& a, std::array<uint64_t, 4> const& b) {
-  return distance<uint64_t, 4>(a, b);
+int distance(std::array<uint64_t, 5> const& a, std::array<uint64_t, 5> const& b) {
+  return distance<uint64_t, 5>(a, b);
 }
+#endif
 
 template <typename GetI, typename GetK, typename Swap>
 void order_by_shortest_path(size_t count, GetI&& geti, GetK&& getk,
@@ -225,9 +236,9 @@ class similarity_ordering_ final : public similarity_ordering::impl {
   using index_type = std::vector<index_value_type>;
   using duplicates_map = std::unordered_map<index_value_type, index_type>;
   using nilsimsa_element_view =
-      basic_array_similarity_element_view<256, uint64_t>;
+      basic_array_similarity_element_view<320, uint64_t>;
   using nilsimsa_cluster =
-      basic_cluster<256, uint64_t, uint32_t, index_value_type>;
+      basic_cluster<320, uint64_t, uint32_t, index_value_type>;
   using nilsimsa_cluster_tree_node = basic_cluster_tree_node<nilsimsa_cluster>;
 
   similarity_ordering_(logger& lgr, progress& prog, worker_group& wg,

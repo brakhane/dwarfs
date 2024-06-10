@@ -33,7 +33,7 @@ namespace dwarfs {
 
 class nilsimsa {
  public:
-  using hash_type = std::array<uint64_t, 4>;
+  using hash_type = std::array<uint64_t, 5>;
 
   nilsimsa();
   ~nilsimsa();
