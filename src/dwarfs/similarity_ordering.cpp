@@ -77,7 +77,8 @@ template <typename T, size_t N>
 int distance(std::array<T, N> const& a, std::array<T, N> const& b) {
     Tlsh ta, tb;
 
-    if (a[0] == 0 || b[0] == 0) return 0;
+    if (a[0] == 0 && b[0] == 0) return 0;
+    if (a[0] == 0 || b[0] == 0) return 9999999;
 
     ta.fromTlshStr((const char*)a.data());
     tb.fromTlshStr((const char*)b.data());
