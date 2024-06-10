@@ -33,7 +33,7 @@ namespace dwarfs {
 class inode;
 
 class inode_element_view
-    : public basic_array_similarity_element_view<320, uint64_t> {
+    : public basic_array_similarity_element_view<576, uint8_t> {
  public:
   inode_element_view() = default;
 

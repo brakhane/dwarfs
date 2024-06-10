@@ -76,15 +76,13 @@ class job_tracker {
 template <typename T, size_t N>
 int distance(std::array<T, N> const& a, std::array<T, N> const& b) {
     Tlsh ta, tb;
-    char buf[80];
-    static_assert(N==5);
 
-    to_hex((unsigned char*)a.data(), 35, buf);
-    if (ta.fromTlshStr(buf) != 0) exit(1);
-    to_hex((unsigned char*)b.data(), 35, buf);
-    if (tb.fromTlshStr(buf) != 0) exit(1);
+    if (a[0] == 0 || b[0] == 0) return 0;
 
-    return ta.totalDiff(&tb, false);
+    ta.fromTlshStr((const char*)a.data());
+    tb.fromTlshStr((const char*)b.data());
+
+    return ta.totalDiff(&tb, true);
 }
 
 #if 0
@@ -236,9 +234,9 @@ class similarity_ordering_ final : public similarity_ordering::impl {
   using index_type = std::vector<index_value_type>;
   using duplicates_map = std::unordered_map<index_value_type, index_type>;
   using nilsimsa_element_view =
-      basic_array_similarity_element_view<320, uint64_t>;
+      basic_array_similarity_element_view<576, uint8_t>;
   using nilsimsa_cluster =
-      basic_cluster<320, uint64_t, uint32_t, index_value_type>;
+      basic_cluster<576, uint8_t, uint32_t, index_value_type>;
   using nilsimsa_cluster_tree_node = basic_cluster_tree_node<nilsimsa_cluster>;
 
   similarity_ordering_(logger& lgr, progress& prog, worker_group& wg,

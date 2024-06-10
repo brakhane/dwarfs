@@ -26,6 +26,10 @@
 #include <algorithm>
 #include <cstring>
 
+#include <mutex>
+#include <thread>
+#include <iostream>
+
 namespace dwarfs {
 
 namespace {
@@ -61,22 +65,23 @@ constexpr inline uint8_t tran3(uint8_t a, uint8_t b, uint8_t c, uint8_t n) {
 
 } // namespace
 
+static std::mutex conmut;
+
 class nilsimsa::impl {
  public:
-  Tlsh tlsh{};
-  impl() = default;
+  Tlsh tlsh;
+  impl() 
+    : tlsh()
+  {
+  }
 
   void update(uint8_t const* data, size_t size) {
     tlsh.update(data, size);
   }
 
   void finalize(hash_type& hash)  {
-    unsigned char hex[40];
     tlsh.final();
-    from_hex(tlsh.getHash(), 35, hex);
-    std::memset(hash.data(), 0, 40);
-    std::memcpy(hash.data(), hex, 35);
-
+    std::strcpy((char*)hash.data(), tlsh.getHash());
   }
 
   // void update(uint8_t const* data, size_t size) {
